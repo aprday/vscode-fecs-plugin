@@ -5,7 +5,7 @@ import * as fecs from 'fecs';
 // this method is called when vs code is activated
 export function activate(context: ExtensionContext) {
 
-	console.log('decorator sample is activated');
+	console.log('fecs is activated');
 	// create a decorator type that we use to decorate large numbers
 	const warningDecorationType = window.createTextEditorDecorationType({
 		backgroundColor: new ThemeColor('editorWarning.foreground'),
@@ -29,31 +29,37 @@ export function activate(context: ExtensionContext) {
     // create a new word counter
     const statusBarItem: StatusBarItem = window.createStatusBarItem(StatusBarAlignment.Left);
 
-    let map = {};
+	let messageMap = {};
+
+	const editor = window.activeTextEditor;
+	if (editor) {
+		check(editor);
+	}
 
 	window.onDidChangeActiveTextEditor(editor => {
+		console.log('active');
 		if (editor) {
-			check(editor.document);;
+			check(editor.document);
 		}
 	}, null, context.subscriptions);
 
 	workspace.onDidSaveTextDocument(event => {
+		console.log('save');
 		const editor = window.activeTextEditor;
 		if (editor) {
-			check(editor);;
+			check(editor);
 		}
     }, null, context.subscriptions);
     
     window.onDidChangeTextEditorSelection(event => {
+		console.log('select');
         if (!event.textEditor || !event.textEditor.document ) {
             return;
         }
         if (event.textEditor === window.activeTextEditor) {
             const editor = event.textEditor;
-            const selection = editor.selection;
-            const line = editor.selection.start.line;
-            const end = editor.selection.end;
-            updateStatusBar(map[line + 1][0].info);
+			const line = editor.selection.start.line;
+            updateStatusBar(messageMap[line + 1] ? messageMap[line + 1][0].info : '');
         }
     });
 
@@ -62,7 +68,7 @@ export function activate(context: ExtensionContext) {
 			return;
 		}
 		const {uri} = editor.document;
-		let messageMap = {};
+		messageMap = {};
 		const warnings: DecorationOptions[] = [];
 		const errors: DecorationOptions[] = [];
 		const diagnostics: Diagnostic[] = [];
@@ -91,7 +97,6 @@ export function activate(context: ExtensionContext) {
 		diagnosticCollection.set(uri, diagnostics);
 		editor.setDecorations(warningDecorationType, warnings);
         editor.setDecorations(errorDecorationType, errors);
-        map = messageMap;
         return messageMap;
 		
 	}
@@ -110,7 +115,7 @@ export function activate(context: ExtensionContext) {
 
     function updateStatusBar(info) {
         if (info) {
-            statusBarItem.text = `$(info) ${info} Words` || 'world';
+            statusBarItem.text = `$(info) ${info}`;
             statusBarItem.show();
         } else {
             statusBarItem.hide();

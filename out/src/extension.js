@@ -4,7 +4,7 @@ const vscode_1 = require("vscode");
 const fecs = require("fecs");
 // this method is called when vs code is activated
 function activate(context) {
-    console.log('decorator sample is activated');
+    console.log('fecs is activated');
     // create a decorator type that we use to decorate large numbers
     const warningDecorationType = vscode_1.window.createTextEditorDecorationType({
         backgroundColor: new vscode_1.ThemeColor('editorWarning.foreground'),
@@ -23,30 +23,33 @@ function activate(context) {
     const diagnosticCollection = vscode_1.languages.createDiagnosticCollection('fecs');
     // create a new word counter
     const statusBarItem = vscode_1.window.createStatusBarItem(vscode_1.StatusBarAlignment.Left);
-    let map = {};
+    let messageMap = {};
+    const editor = vscode_1.window.activeTextEditor;
+    if (editor) {
+        check(editor);
+    }
     vscode_1.window.onDidChangeActiveTextEditor(editor => {
+        console.log('active');
         if (editor) {
             check(editor.document);
-            ;
         }
     }, null, context.subscriptions);
     vscode_1.workspace.onDidSaveTextDocument(event => {
+        console.log('save');
         const editor = vscode_1.window.activeTextEditor;
         if (editor) {
             check(editor);
-            ;
         }
     }, null, context.subscriptions);
     vscode_1.window.onDidChangeTextEditorSelection(event => {
+        console.log('select');
         if (!event.textEditor || !event.textEditor.document) {
             return;
         }
         if (event.textEditor === vscode_1.window.activeTextEditor) {
             const editor = event.textEditor;
-            const selection = editor.selection;
             const line = editor.selection.start.line;
-            const end = editor.selection.end;
-            updateStatusBar(map[line + 1][0].info);
+            updateStatusBar(messageMap[line + 1] ? messageMap[line + 1][0].info : '');
         }
     });
     function updateDecorations(editor, rules) {
@@ -54,7 +57,7 @@ function activate(context) {
             return;
         }
         const { uri } = editor.document;
-        let messageMap = {};
+        messageMap = {};
         const warnings = [];
         const errors = [];
         const diagnostics = [];
@@ -80,7 +83,6 @@ function activate(context) {
         diagnosticCollection.set(uri, diagnostics);
         editor.setDecorations(warningDecorationType, warnings);
         editor.setDecorations(errorDecorationType, errors);
-        map = messageMap;
         return messageMap;
     }
     function check(editor) {
@@ -96,7 +98,7 @@ function activate(context) {
     }
     function updateStatusBar(info) {
         if (info) {
-            statusBarItem.text = `$(info) ${info} Words` || 'world';
+            statusBarItem.text = `$(info) ${info}`;
             statusBarItem.show();
         }
         else {
