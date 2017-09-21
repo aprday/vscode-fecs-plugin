@@ -3,7 +3,7 @@
     "displayName": "vscode-fecs-plugin",
     "description": "",
     "version": "0.0.1",
-    "publisher": "linter-fecs",
+    "publisher": "vscode-fecs-plugin",
     "engines": {
         "vscode": "^1.16.0"
     },
@@ -16,10 +16,6 @@
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
-            {
-                "command": "extension.sayHello",
-                "title": "Hello World"
-            }
         ]
     },
     "scripts": {
