@@ -2,6 +2,9 @@
 import {window, workspace, languages, ExtensionContext, DecorationOptions, ThemeColor, Position, Range, Diagnostic, StatusBarItem, StatusBarAlignment} from 'vscode';
 import * as fecs from 'fecs';
 
+const Readable = require('stream').Readable;
+const File = require('vinyl');
+
 // this method is called when vs code is activated
 export function activate(context: ExtensionContext) {
 
@@ -101,15 +104,38 @@ export function activate(context: ExtensionContext) {
 		
 	}
 
+	function getStream(doc) {
+		const {fileName} = doc;
+		const text = doc.getText();
+		let type = fileName.split('.').pop();
+	
+		let buffer = new Buffer(text);
+		let file = new File({
+			contents: buffer,
+			path: fileName || 'current-file.' + type,
+			stat: {
+				size: buffer.length
+			}
+		});
+		let stream = new Readable();
+		stream._read = function () {
+			this.emit('data', file);
+			this.push(null);
+		};
+		return stream;
+	}
+
 	function check(editor) {
 		const document = editor.document;
-        fecs.check(Object.assign({}, fecs.getOptions(), {
-            /* eslint-disable */
-            _: [document && document.uri.path],
-            /* eslint-enable */
-            reporter: 'baidu'
-        }), (success, data = []) => {
-			data[0] && updateDecorations(editor, data[0].errors)
+		const stream = getStream(document);
+	
+        fecs.check({
+            lookup: true,
+            stream: stream,
+			reporter: 'baidu',
+			level: 0,
+        }, (success, data = []) => {
+			data[0] && updateDecorations(editor, data[0].errors);
         });
     }
 

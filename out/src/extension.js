@@ -2,6 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const vscode_1 = require("vscode");
 const fecs = require("fecs");
+const Readable = require('stream').Readable;
+const File = require('vinyl');
 // this method is called when vs code is activated
 function activate(context) {
     console.log('fecs is activated');
@@ -85,14 +87,34 @@ function activate(context) {
         editor.setDecorations(errorDecorationType, errors);
         return messageMap;
     }
+    function getStream(doc) {
+        const { fileName } = doc;
+        const text = doc.getText();
+        let type = fileName.split('.').pop();
+        let buffer = new Buffer(text);
+        let file = new File({
+            contents: buffer,
+            path: fileName || 'current-file.' + type,
+            stat: {
+                size: buffer.length
+            }
+        });
+        let stream = new Readable();
+        stream._read = function () {
+            this.emit('data', file);
+            this.push(null);
+        };
+        return stream;
+    }
     function check(editor) {
         const document = editor.document;
-        fecs.check(Object.assign({}, fecs.getOptions(), {
-            /* eslint-disable */
-            _: [document && document.uri.path],
-            /* eslint-enable */
-            reporter: 'baidu'
-        }), (success, data = []) => {
+        const stream = getStream(document);
+        fecs.check({
+            lookup: true,
+            stream: stream,
+            reporter: 'baidu',
+            level: 0,
+        }, (success, data = []) => {
             data[0] && updateDecorations(editor, data[0].errors);
         });
     }
