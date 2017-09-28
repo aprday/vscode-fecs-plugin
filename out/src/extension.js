@@ -5,6 +5,12 @@ const fecs = require("fecs");
 // this method is called when vs code is activated
 function activate(context) {
     console.log('fecs is activated');
+    vscode_1.languages.registerHoverProvider('javascript', {
+        provideHover(document, position, token) {
+            console.log(document, position, token);
+            return new vscode_1.Hover('[My Cool Feature](command:myTrustedContents)');
+        }
+    });
     // create a decorator type that we use to decorate large numbers
     const warningDecorationType = vscode_1.window.createTextEditorDecorationType({
         backgroundColor: new vscode_1.ThemeColor('editorWarning.foreground'),
@@ -31,7 +37,7 @@ function activate(context) {
     vscode_1.window.onDidChangeActiveTextEditor(editor => {
         console.log('active');
         if (editor) {
-            check(editor.document);
+            check(editor);
         }
     }, null, context.subscriptions);
     vscode_1.workspace.onDidSaveTextDocument(event => {
@@ -95,8 +101,8 @@ function activate(context) {
             _: [path],
             /* eslint-enable */
             reporter: 'baidu'
-        }), (success, data = []) => {
-            data[0] && updateDecorations(editor, data[0].errors);
+        }), (success, errors = []) => {
+            errors[0] && updateDecorations(editor, errors[0].errors);
         });
     }
     function updateStatusBar(info) {

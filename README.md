@@ -4,6 +4,8 @@ baidu fecs 代码格式校验工具
 
 ## Features
 
+![preview](/image/1.gif)
+
 ## Requirements
 
 base on fecs
@@ -12,25 +14,13 @@ base on fecs
     npm install fecs --g
 ```
 
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
 ### 1.0.0
 
-Initial release of ...
+    1. gutter提示
+    2. 代码风格错误提测
+    3. 底部提示
 
 ### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
 
 -----------------------------------------------------------------------------------------------------------
 

@@ -1,11 +1,19 @@
 
-import {window, workspace, languages, ExtensionContext, DecorationOptions, ThemeColor, Position, Range, Diagnostic, StatusBarItem, StatusBarAlignment} from 'vscode';
+import {window, workspace, languages, Hover, ExtensionContext, DecorationOptions, ThemeColor, Position, Range, Diagnostic, StatusBarItem, StatusBarAlignment, MarkdownString} from 'vscode';
 import * as fecs from 'fecs';
 
 // this method is called when vs code is activated
 export function activate(context: ExtensionContext) {
 
 	console.log('fecs is activated');
+
+	languages.registerHoverProvider('javascript', {
+		provideHover(document, position, token) {
+			console.log(document, position, token);
+			return new Hover('[My Cool Feature](command:myTrustedContents)');
+		}
+	});
+
 	// create a decorator type that we use to decorate large numbers
 	const warningDecorationType = window.createTextEditorDecorationType({
 		backgroundColor: new ThemeColor('editorWarning.foreground'),
@@ -39,7 +47,7 @@ export function activate(context: ExtensionContext) {
 	window.onDidChangeActiveTextEditor(editor => {
 		console.log('active');
 		if (editor) {
-			check(editor.document);
+			check(editor);
 		}
 	}, null, context.subscriptions);
 
@@ -111,8 +119,8 @@ export function activate(context: ExtensionContext) {
             _: [path],
             /* eslint-enable */
             reporter: 'baidu'
-        }), (success, data = []) => {
-            data[0] && updateDecorations(editor, data[0].errors);
+        }), (success, errors = []) => {
+            errors[0] && updateDecorations(editor, errors[0].errors);
         });
     }
 
